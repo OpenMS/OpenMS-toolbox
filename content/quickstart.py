@@ -33,6 +33,7 @@ A collection of web-based tools for mass spectrometry analysis powered by **pyOp
 - **m/z Calculator**: Calculate mass-to-charge ratios for peptides
 - **Isotopic Pattern Calculator**: Generate theoretical isotope distributions
 - **Fragment Ion Generation**: Calculate fragment ions for peptide sequences
+- **FASTA Analyzer**: Analyze FASTA files for sequence length distributions and residue frequencies
 """
 )
 v_space(1, c2)
@@ -56,17 +57,3 @@ Download the latest version for Windows here by clicking the button below.
 Extract the zip file and run the installer (.msi) file to install the app. The app can then be launched using the corresponding desktop icon.
 """
     )
-
-st.markdown(
-    """## Workspaces and Settings
-The **sidebar** contains two boxes, one for **workspaces** (in local mode) and one for **settings**.
-
-**Workspaces** store user inputs, parameters and results for a specific session or analysis task.
-
-In **online mode** where the app is hosted on a remote server the workspace has a unique identifier number embedded within the URL. To share your data analysis with collaboration partners simply share the URL.
-
-In **local mode** where the app is run locally on a PC (e.g. via Windows executable) the user can create and delete separate workspaces for different projects.
-
-**Settings** contain global settings which are relevant for all pages, such as the image export format.
-"""
-)
