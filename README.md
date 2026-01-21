@@ -12,6 +12,7 @@ This repository contains a template app for OpenMS workflows in a web applicatio
 - Captcha control
 - Packaged executables for Windows
 - framework for workflows with OpenMS TOPP tools
+- FASTA Analyzer for sequence statistics and residue frequency analysis
 - Deployment [with docker-compose](https://github.com/OpenMS/streamlit-deployment)
 
 ## 🔗 Try the Online Demo
