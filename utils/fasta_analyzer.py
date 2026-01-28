@@ -8,23 +8,13 @@ from io import StringIO
 from typing import List, Tuple, Dict, Any
 from collections import Counter
 
+import biotite.sequence as seq
 import biotite.sequence.io.fasta as fasta
-
-
-# Residue alphabets for different sequence types
-PROTEIN_RESIDUES = "ACDEFGHIKLMNPQRSTVWY"
-PROTEIN_AMBIGUOUS = "BJOUXZ"  # Ambiguous/rare amino acids
-DNA_RESIDUES = "ACGT"
-RNA_RESIDUES = "ACGU"
-NUCLEOTIDE_AMBIGUOUS = "N"
-
-# Characters unique to proteins (not found in nucleotides)
-PROTEIN_ONLY_CHARS = set("DEFHIKLMPQRSVWY")
 
 
 def detect_sequence_type(sequence: str) -> str:
     """
-    Auto-detect sequence type based on character composition.
+    Auto-detect sequence type using biotite's alphabet validation.
 
     Args:
         sequence: The sequence string to analyze
@@ -33,22 +23,23 @@ def detect_sequence_type(sequence: str) -> str:
         One of: "protein", "dna", "rna"
     """
     seq_upper = sequence.upper()
-    nucleotide_chars = set("ACGTU")
 
-    # Check for protein-only characters first
-    if any(c in PROTEIN_ONLY_CHARS for c in seq_upper):
-        return "protein"
-
-    # Count nucleotide vs total alphabetic characters
-    total = sum(1 for c in seq_upper if c.isalpha())
-    nuc_count = sum(1 for c in seq_upper if c in nucleotide_chars)
-
-    if total > 0 and nuc_count / total > 0.9:
-        # Check for U (RNA) vs T (DNA)
-        if "U" in seq_upper and "T" not in seq_upper:
-            return "rna"
+    # Try nucleotide first (biotite's approach)
+    try:
+        seq.NucleotideSequence(seq_upper)
         return "dna"
+    except seq.AlphabetError:
+        pass
 
+    # Check for RNA (U instead of T)
+    if "U" in seq_upper and "T" not in seq_upper:
+        try:
+            seq.NucleotideSequence(seq_upper.replace("U", "T"))
+            return "rna"
+        except seq.AlphabetError:
+            pass
+
+    # Fall back to protein
     return "protein"
 
 
@@ -93,7 +84,7 @@ def calculate_sequence_lengths(sequences: List[Tuple[str, str, str]]) -> Dict[st
             "total_residues": 0,
         }
 
-    lengths = [len(seq) for _, seq, _ in sequences]
+    lengths = [len(sequence) for _, sequence, _ in sequences]
     headers = [header for header, _, _ in sequences]
     sorted_lengths = sorted(lengths)
 
@@ -121,13 +112,13 @@ def calculate_residue_frequencies(
     Returns:
         Dictionary with residue counts and percentages
     """
-    # Determine the alphabet to use
+    # Get alphabets from biotite (use unambiguous alphabets to avoid overlap with amino acids)
     if seq_type == "protein":
-        expected_residues = PROTEIN_RESIDUES + PROTEIN_AMBIGUOUS
+        expected_residues = "".join(seq.ProteinSequence.alphabet.get_symbols())
     elif seq_type == "dna":
-        expected_residues = DNA_RESIDUES + NUCLEOTIDE_AMBIGUOUS
+        expected_residues = "ACGTN"  # Unambiguous DNA + N for unknown
     elif seq_type == "rna":
-        expected_residues = RNA_RESIDUES + NUCLEOTIDE_AMBIGUOUS
+        expected_residues = "ACGUN"  # Unambiguous RNA + N for unknown
     else:
         # Auto-detect based on majority of sequences
         type_counts = Counter(s_type for _, _, s_type in sequences)
@@ -135,7 +126,7 @@ def calculate_residue_frequencies(
         return calculate_residue_frequencies(sequences, majority_type)
 
     # Count all residues
-    all_residues = "".join(seq.upper() for _, seq, _ in sequences)
+    all_residues = "".join(sequence.upper() for _, sequence, _ in sequences)
     residue_counts = Counter(all_residues)
     total = len(all_residues)
 
