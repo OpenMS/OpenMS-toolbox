@@ -16,7 +16,10 @@ from pathlib import Path
 # Add utils to path
 sys.path.append(str(Path(__file__).parent.parent))
 
+from src.common.common import page_setup
 from utils.fasta_analyzer import analyze_fasta
+
+params = page_setup()
 
 def main():
     """Main function for the FASTA Analyzer page."""
