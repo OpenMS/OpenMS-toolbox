@@ -65,7 +65,7 @@ packaging==25.0
     #   matplotlib
     #   plotly
     #   streamlit
-pandas==2.2.3
+pandas==3.0.0
     # via
     #   pyopenms
     #   pyopenms-viz
