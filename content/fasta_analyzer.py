@@ -171,10 +171,11 @@ def main():
             "Percentage": [f"{p:.2f}%" for p in freq_data["percentages"].values()],
         })
         residue_df = residue_df.sort_values("Count", ascending=False)
+        nonzero_residues = residue_df[residue_df["Count"] > 0]
 
         # Bar chart
         fig_bar = px.bar(
-            residue_df,
+            nonzero_residues,
             x="Residue",
             y="Count",
             title=f"Residue Frequencies ({freq_data['seq_type'].upper()})",
@@ -189,19 +190,18 @@ def main():
         with col_table:
             st.markdown("**Residue Counts**")
             st.dataframe(
-                residue_df,
+                nonzero_residues,
                 use_container_width=True,
                 hide_index=True,
             )
 
         with col_chart:
-            # Pie chart for top residues
-            top_residues = residue_df.head(10)
+            # Pie chart for residue composition
             fig_pie = px.pie(
-                top_residues,
+                nonzero_residues,
                 values="Count",
                 names="Residue",
-                title="Top 10 Residues",
+                title="Residue Composition",
             )
             st.plotly_chart(fig_pie, use_container_width=True)
 
