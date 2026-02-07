@@ -36,10 +36,32 @@ def main():
 
     with st.expander("How FASTA Analysis Works"):
         st.markdown("""
+        **Sequence Type Detection:**
+        - Sequences are auto-detected as DNA, RNA, or protein based on their characters
+        - Nucleotide sequences may contain standard bases, modified bases, and IUPAC ambiguity codes
+        - Sequences with U (but no T) are classified as RNA; otherwise as DNA
+        - Sequences containing characters outside the nucleotide alphabet are classified as protein
+
+        **Supported Nucleotide Alphabet:**
+
+        | Symbol | Meaning |
+        |--------|---------|
+        | A | Adenosine |
+        | C | Cytidine |
+        | G | Guanosine |
+        | T | Ribosylthymine |
+        | U | Uridine |
+        | I | Inosine |
+        | X | Xanthosine |
+        | Q | Pseudouridine (\u03A8) |
+        | R | Unspecified purine |
+        | Y | Unspecified pyrimidine |
+        | N | Unspecified/unknown |
+
         **Residue Frequencies:**
         - For proteins: counts of the 20 standard amino acids (ACDEFGHIKLMNPQRSTVWY)
-        - For DNA: counts of A, C, G, T (plus N for ambiguous)
-        - For RNA: counts of A, C, G, U (plus N for ambiguous)
+        - For DNA: counts of A, C, G, T, I, N, X, Q, R, Y
+        - For RNA: counts of A, C, G, U, I, N, X, Q, R, Y
 
         **Length Statistics:**
         - Histogram showing distribution of sequence lengths

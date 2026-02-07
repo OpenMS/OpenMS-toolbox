@@ -11,10 +11,14 @@ from collections import Counter
 import biotite.sequence as seq
 import biotite.sequence.io.fasta as fasta
 
+# Extended nucleotide alphabet: standard bases + modified bases (inosine, xanthosine,
+# pseudouridine as Q) + IUPAC ambiguity codes (R=purine, Y=pyrimidine, N=unknown)
+NUCLEOTIDE_ALPHABET = set("ACGTIUNXQRY")
+
 
 def detect_sequence_type(sequence: str) -> str:
     """
-    Auto-detect sequence type using biotite's alphabet validation.
+    Auto-detect sequence type using the extended nucleotide alphabet.
 
     Args:
         sequence: The sequence string to analyze
@@ -22,24 +26,13 @@ def detect_sequence_type(sequence: str) -> str:
     Returns:
         One of: "protein", "dna", "rna"
     """
-    seq_upper = sequence.upper()
+    seq_upper = set(sequence.upper())
 
-    # Try nucleotide first (biotite's approach)
-    try:
-        seq.NucleotideSequence(seq_upper)
-        return "dna"
-    except seq.AlphabetError:
-        pass
-
-    # Check for RNA (U instead of T)
-    if "U" in seq_upper and "T" not in seq_upper:
-        try:
-            seq.NucleotideSequence(seq_upper.replace("U", "T"))
+    if seq_upper <= NUCLEOTIDE_ALPHABET:
+        if "U" in seq_upper and "T" not in seq_upper:
             return "rna"
-        except seq.AlphabetError:
-            pass
+        return "dna"
 
-    # Fall back to protein
     return "protein"
 
 
@@ -116,9 +109,9 @@ def calculate_residue_frequencies(
     if seq_type == "protein":
         expected_residues = "".join(seq.ProteinSequence.alphabet.get_symbols())
     elif seq_type == "dna":
-        expected_residues = "ACGTN"  # Unambiguous DNA + N for unknown
+        expected_residues = "ACGTINXQRY"  # Extended DNA alphabet
     elif seq_type == "rna":
-        expected_residues = "ACGUN"  # Unambiguous RNA + N for unknown
+        expected_residues = "ACGUINXQRY"  # Extended RNA alphabet
     else:
         # Auto-detect based on majority of sequences
         type_counts = Counter(s_type for _, _, s_type in sequences)
@@ -164,7 +157,7 @@ def calculate_gc_content(sequence: str) -> float:
     """
     seq_upper = sequence.upper()
     gc_count = seq_upper.count("G") + seq_upper.count("C")
-    total = sum(1 for c in seq_upper if c in "ACGTU")
+    total = sum(1 for c in seq_upper if c in NUCLEOTIDE_ALPHABET)
     return (gc_count / total * 100) if total > 0 else 0
 
 
