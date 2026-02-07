@@ -65,7 +65,7 @@ def main():
 
         **Length Statistics:**
         - Histogram showing distribution of sequence lengths
-        - Summary statistics: min, max, mean, median lengths
+        - Summary statistics: min, max, mean, median, 25th/75th percentile lengths
         """)
 
     # Input section
@@ -113,9 +113,17 @@ def main():
         # Display results
         st.success(f"Successfully analyzed {results['total_sequences']} sequence(s)")
 
+        # Build length DataFrame for metrics and histogram
+        length_data = pd.DataFrame({
+            "Header": results["length_stats"]["headers"],
+            "Length": results["length_stats"]["lengths"],
+        })
+        q1 = length_data["Length"].quantile(0.25)
+        q3 = length_data["Length"].quantile(0.75)
+
         # Summary metrics
         st.subheader("Summary Statistics")
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
 
         with col1:
             st.metric("Total Sequences", results["total_sequences"])
@@ -123,23 +131,21 @@ def main():
             st.metric("Total Residues", f"{results['length_stats']['total_residues']:,}")
         with col3:
             st.metric("Avg Length", f"{results['length_stats']['mean']:.1f}")
+        with col4:
+            st.metric("Median Length", results["length_stats"]["median"])
 
-        # Additional length stats
-        col5, col6, col7 = st.columns(3)
+        col5, col6, col7, col8 = st.columns(4)
         with col5:
             st.metric("Min Length", results["length_stats"]["min"])
         with col6:
-            st.metric("Max Length", results["length_stats"]["max"])
+            st.metric("25th Percentile", f"{q1:.1f}")
         with col7:
-            st.metric("Median Length", results["length_stats"]["median"])
+            st.metric("75th Percentile", f"{q3:.1f}")
+        with col8:
+            st.metric("Max Length", results["length_stats"]["max"])
 
         # Sequence length histogram
         st.subheader("Sequence Length Distribution")
-
-        length_data = pd.DataFrame({
-            "Header": results["length_stats"]["headers"],
-            "Length": results["length_stats"]["lengths"],
-        })
 
         if len(length_data) > 1:
             # Calculate number of bins based on max bin width of 100
@@ -217,16 +223,20 @@ def main():
                 "Total Residues",
                 "Average Length",
                 "Min Length",
-                "Max Length",
+                "25th Percentile",
                 "Median Length",
+                "75th Percentile",
+                "Max Length",
             ],
             "Value": [
                 results["total_sequences"],
                 results["length_stats"]["total_residues"],
                 f"{results['length_stats']['mean']:.2f}",
                 results["length_stats"]["min"],
-                results["length_stats"]["max"],
+                f"{q1:.2f}",
                 results["length_stats"]["median"],
+                f"{q3:.2f}",
+                results["length_stats"]["max"],
             ],
         })
 
