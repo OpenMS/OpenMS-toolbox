@@ -130,22 +130,22 @@ def main():
 
         # Summary metrics
         st.subheader("Summary Statistics")
-        col1, col2, col3, col4 = st.columns(4)
+        col1, _, col2, _, col3 = st.columns(5)
 
         with col1:
             st.metric("Total Sequences", results["total_sequences"])
         with col2:
-            st.metric("Total Residues", f"{results['length_stats']['total_residues']:,}")
-        with col3:
             st.metric("Avg Length", f"{results['length_stats']['mean']:.1f}")
-        with col4:
-            st.metric("Median Length", results["length_stats"]["median"])
+        with col3:
+            st.metric("Total Residues", f"{results['length_stats']['total_residues']:,}")
 
-        col5, col6, col7, col8 = st.columns(4)
-        with col5:
+        col4, col5, col6, col7, col8 = st.columns(5)
+        with col4:
             st.metric("Min Length", results["length_stats"]["min"])
-        with col6:
+        with col5:
             st.metric("25th Percentile", f"{q1:.1f}")
+        with col6:
+            st.metric("Median Length", results["length_stats"]["median"])
         with col7:
             st.metric("75th Percentile", f"{q3:.1f}")
         with col8:
