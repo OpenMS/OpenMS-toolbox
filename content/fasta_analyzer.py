@@ -6,6 +6,7 @@ sequence length histograms and residue frequency statistics. Supports
 both protein and nucleotide (DNA/RNA) sequences.
 """
 
+import gzip
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -66,6 +67,9 @@ def main():
         **Length Statistics:**
         - Histogram showing distribution of sequence lengths
         - Summary statistics: min, max, mean, median, 25th/75th percentile lengths
+
+        **Gzipped Files:**
+        - Gzipped FASTA files (`.gz`) are supported and automatically decompressed
         """)
 
     # Input section
@@ -74,8 +78,8 @@ def main():
     # File uploader (outside form since file uploaders don't work well inside forms)
     uploaded_file = st.file_uploader(
         "Upload FASTA file",
-        type=["fasta", "fa", "faa", "fna"],
-        help="Upload a FASTA file (.fasta, .fa, .faa, .fna)",
+        type=["fasta", "fa", "faa", "fna", "gz"],
+        help="Upload a FASTA file (.fasta, .fa, .faa, .fna) or gzipped FASTA (.gz)",
     )
 
     # Analyze button
@@ -87,11 +91,14 @@ def main():
             st.error("Please upload a FASTA file to analyze.")
             return
 
-        # Read file content
+        # Read file content (transparently handles gzipped files)
         try:
-            fasta_input = uploaded_file.read().decode("utf-8")
-        except UnicodeDecodeError:
-            st.error("Could not read file. Please ensure it is a valid text file.")
+            raw_bytes = uploaded_file.read()
+            if raw_bytes[:2] == b"\x1f\x8b":
+                raw_bytes = gzip.decompress(raw_bytes)
+            fasta_input = raw_bytes.decode("utf-8")
+        except (UnicodeDecodeError, gzip.BadGzipFile):
+            st.error("Could not read file. Please ensure it is a valid (optionally gzipped) FASTA file.")
             return
 
         if not fasta_input.strip():
